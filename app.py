@@ -41,15 +41,14 @@ def upload_image():
 		
 		# easyOCR
 		fileText = reader.readtext(filepath, detail=0)
-		tText = transliterate(' '.join(fileText), scheme_map=scheme_map)
+		fileText = ' '.join(fileText)
+		tText = transliterate(fileText, scheme_map=scheme_map)
 
         # 4. Send a success response
 		return jsonify({
-			"Text": f"{fileText}",
-			"Transliterated text": f"{tText}"
+			"rText": fileText,
+			"tText": f"{tText}"
 		})
-
-# (You can keep your old /api/data route here if you want)
 
 # Run the app
 if __name__ == "__main__":
