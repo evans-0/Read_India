@@ -4,32 +4,191 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ReadIndia</title>
+	<style>
+		html {
+			box-sizing: border-box;
+		}
+		*, *:before, *:after {
+			box-sizing: inherit;
+			padding: 0;
+			margin: 0;
+		}
+
+		body {
+			background-color: #020d56;
+		}
+
+		h1 {
+			color: white;
+			background-color: #a660d1;
+			border-radius: 0px;
+		}
+
+		p {
+			font-family: Arial, sans-serif;
+			line-height: 1.6;
+			color: #f0f0f0;
+			font-size: 16px;
+			margin-bottom: 24px;
+		}
+
+		/* to hide the default input*/
+		#imageInput {
+			width: 0.1px;
+			height: 0.1px;
+			opacity: 0;
+			overflow: hidden;
+			position: absolute;
+			z-index: -1;
+		}
+
+		.file-label {
+            max-width: 100%;
+            height: auto; /* Ensures aspect ratio is kept */
+            border: 2px solid green;
+			background-color: #007bff; /* Primary blue */
+    		color: white;
+    		padding: 10px 20px;
+    		border-radius: 5px;
+    		cursor: pointer;
+    		font-weight: 600;
+    		transition: background-color 0.2s;
+    		display: inline-block; /* Allows padding and margin */
+            max-width: 100%;
+            height: auto; /* Ensures aspect ratio is kept */
+            border: none;
+		}
+
+		.file-label:hover {
+    		background-color: #0056b3; /* Darker blue on hover */
+		}
+
+		#myButton {
+			background-color: #28a745; /* Green */
+ 			color: white;
+    		font-size: 16px;
+    		padding: 10px 20px;
+    		border: none;
+    		border-radius: 5px;
+    		cursor: pointer;
+    		font-weight: bold;
+		}
+
+		#myButton:hover {
+    		background-color: #218838; /* Darker green */
+		}
+
+		.responsive-image {
+			max-width: 25%;
+			max-height:25%;
+            height: auto; /* Ensures aspect ratio is kept */
+            border: none;
+			margin-top: 20px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+        }
+
+		.flex-container {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			gap: 30px;
+		}
+
+		.response-output {
+			background-color: #fbfafa; /* Light gray background */
+    		border: 1px solid #e9ecef; /* Subtle light border */
+    		border-radius: 5px;        /* Rounded corners */
+    		padding: 15px;             /* Space inside the box */
+    		margin-top: 10px;          /* Space above the box */
+    		margin-bottom: 10px;
+    
+    		font-family: "Courier New", Courier, monospace; /* A code font */
+    		text-align: left;          /* Align text to the left */
+			font-size: 16px;
+			font-weight: bold;
+    
+    		/* These two are key for handling JSON */
+    		white-space: pre-wrap;     /* Respects newlines and wraps long lines */
+    		word-break: break-all;
+
+			visibility: hidden;
+		}
+
+		.accent-heading {
+    		font-family: Arial, sans-serif;
+    		font-size: 24px;
+    		font-weight: 600;
+
+    		border-left: 5px solid #007bff;  /* A thick blue left border */
+    		padding-left: 10px;           /* Space between border and text */
+			color: #f0f0f0;
+    		margin-bottom: 15px;
+		}
+	</style>
 </head>
 <body>
 
     <h1><center>Read India</center></h1>
-    <p>Click the button to upload an image you want to transliterate.</p>
-
+    
+	<div class="flex-container">
+		<p>
+			Click the button to upload an image you want to transliterate.
+		</p>
+	</div>
+	<div class="flex-container">
+		<label for="imageInput" class="file-label">Upload Image</label>
+		<button id="myButton">Transliterate</button>
+	</div>
 	<input type="file" id="imageInput" accept="image/*">
-    <button id="myButton">Load Image</button>
 
-    <pre id="response-output">Data will appear here...</pre>
+	<div class="flex-container">
+		<img id="imagePreview" src="" class="responsive-image">
+	</div>
+	<br>
+
+	<div class="accent-heading">
+		Text in the image:
+	</div>
+	<div class="flex-container">
+	    <pre id="readtext-output" class="response-output"></pre>
+	</div>
+
+	<div class="accent-heading">
+		Transliterated image:
+	</div>
+	<div class="flex-container">
+		<pre id="translit-output" class="response-output"></pre>
+	</div>
 
     <script>
         // 1. Get the button and output elements
 		const input = document.getElementById("imageInput");
         const button = document.getElementById("myButton");
-        const output = document.getElementById("response-output");
+        const raw_output = document.getElementById("readtext-output");
+        const tl_output = document.getElementById("translit-output");
+		const image = document.getElementById("imagePreview");
 
         // 2. Add a click event listener to the button
         button.addEventListener("click", () => {
 			const file = input.files[0];
+			raw_output.style.visibility = 'visible';
+			tl_output.style.visibility = 'visible';
 
 			if (!file){
-				output.textContent = "Please select a file first.";
+				raw_output.textContent = "Please select a file first.";
+				tl_output.textContent = "Please select a file first.";
 				return;
+			} else {
+				const reader = new FileReader();
+				reader.onload = (event) => {
+					image.src = event.target.result;
+				};
+				reader.readAsDataURL(file);
 			}
-            output.textContent = "Loading...";
+            raw_output.textContent = "Loading...";
+            tl_output.textContent = "Loading...";
 
 			const formData = new FormData();
 			formData.append("image", file);
@@ -42,7 +201,12 @@
                 .then(response => response.json()) // Convert the response to JSON
                 .then(data => {
                     // 4. Display the data from the backend
-                    output.textContent = JSON.stringify(data, null, 2);
+                    const jsonString = JSON.stringify(data, null, 2);
+					const myObject = JSON.parse(jsonString);
+					const rtext = myObject.rText;
+					const ttext = myObject.tText;
+                    raw_output.textContent = rtext;
+                    tl_output.textContent = ttext;
                 })
                 .catch(error => {
                     // Handle any errors
