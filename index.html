@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReadIndia</title>
+</head>
+<body>
+
+    <h1><center>Read India</center></h1>
+    <p>Click the button to upload an image you want to transliterate.</p>
+
+	<input type="file" id="imageInput" accept="image/*">
+    <button id="myButton">Load Image</button>
+
+    <pre id="response-output">Data will appear here...</pre>
+
+    <script>
+        // 1. Get the button and output elements
+		const input = document.getElementById("imageInput");
+        const button = document.getElementById("myButton");
+        const output = document.getElementById("response-output");
+
+        // 2. Add a click event listener to the button
+        button.addEventListener("click", () => {
+			const file = input.files[0];
+
+			if (!file){
+				output.textContent = "Please select a file first.";
+				return;
+			}
+            output.textContent = "Loading...";
+
+			const formData = new FormData();
+			formData.append("image", file);
+
+            // 3. This is the "fetch" call to your Python API!
+            fetch("http://127.0.0.1:5000/api/upload", {
+				method: "POST",
+				body: formData,
+			})
+                .then(response => response.json()) // Convert the response to JSON
+                .then(data => {
+                    // 4. Display the data from the backend
+                    output.textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    // Handle any errors
+                    output.textContent = "Error: " + error;
+                });
+        });
+    </script>
+
+</body>
+</html>
