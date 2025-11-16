@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import os
-import pytesseract
 import easyocr
 from indic_transliteration import sanscript
 from indic_transliteration.sanscript import SchemeMap, SCHEMES, transliterate
@@ -36,9 +35,6 @@ def upload_image():
 		filepath = os.path.join(UPLOAD_FOLDER, file.filename)
 		file.save(filepath)
         
-		#fileText = pytesseract.image_to_string(filepath, lang='mal+hin+tam')
-		#tText = transliterate(fileText, scheme_map=scheme_map)
-		
 		# easyOCR
 		fileText = reader.readtext(filepath, detail=0)
 		fileText = ' '.join(fileText)
