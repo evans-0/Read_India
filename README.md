@@ -1,6 +1,6 @@
 # Requires the following python libraries:
 - `flask`
-- `easyocr`
+- `paddleocr`
 - `indic_transliteration`
 
 # To run the file:
