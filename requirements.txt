@@ -2,5 +2,6 @@ Flask==3.1.2
 flask-cors==6.0.1
 gunicorn==23.0.0
 indic-transliteration==2.3.75
+paddlepaddle==3.2.1
 paddle==1.1.9
 paddleocr==3.3.2
