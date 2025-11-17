@@ -1,12 +1,12 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import os
-import easyocr
+from paddleocr import PaddleOCR
 from indic_transliteration import sanscript
 from indic_transliteration.sanscript import SchemeMap, SCHEMES, transliterate
 
 scheme_map = SchemeMap(SCHEMES[sanscript.DEVANAGARI], SCHEMES[sanscript.ITRANS])
-reader = easyocr.Reader(['en','hi'])
+ocr = PaddleOCR(use_textline_orientation=True, lang='hi')
 
 # 1. Create the app and enable CORS
 app = Flask(__name__)
@@ -36,7 +36,7 @@ def upload_image():
 		file.save(filepath)
         
 		# easyOCR
-		fileText = reader.readtext(filepath, detail=0)
+		fileText = ocr.predict(filepath)[0]['rec_texts']
 		fileText = ' '.join(fileText)
 		tText = transliterate(fileText, scheme_map=scheme_map)
 
